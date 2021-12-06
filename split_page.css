@@ -1,0 +1,38 @@
+.page_nav_container {
+    display: inline-block;
+    justify-content: center;
+}
+
+.page_nav {
+    float: left;
+    padding: 0px 2px;
+}
+
+.page_nav_ignore_text {
+    float: left;
+}
+
+.page_nav_btn {
+    border: solid;
+    border-width: 1px;
+    min-width: 25px;
+    display: block;
+    float: left;
+    padding: 2px;
+    margin: 0px 2px;
+}
+
+.page_nav_cur_btn {
+    background-color: darkgray;
+}
+
+.page_nav_ctrl_btn {
+    width: 35px;
+}
+
+.page_nav_input {
+    width: 40px;
+    border: solid;
+    border-width: 1px;
+    padding: 2px;
+}
