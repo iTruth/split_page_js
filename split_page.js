@@ -10,6 +10,7 @@ function sp_container_info(childs, page_content_container, page_ctrl_container, 
     this.is_setup_page_nav = false;
     this.page_nav_items_container = null;
     this.page_nav = null;
+    this.hidden_nav_input_ctrl_width = 700;
     this.on_page_changed = null;
 }
 
@@ -145,11 +146,29 @@ function sp_create_nav_btn(container, page_num) {
     return page_btn;
 }
 
+function sp_create_ignore_nav_btn(container) {
+    let page_ignore_nav_btn = document.createElement('button');
+    page_ignore_nav_btn.innerHTML = '...';
+    page_ignore_nav_btn.className = 'page_nav_btn';
+    page_ignore_nav_btn.onclick = function() {
+        let raw_page_num = window.prompt('please enter the page number');
+        let page_num = parseInt(raw_page_num);
+        if(isNaN(page_num)) {
+            return;
+        }
+        sp_load_content(container, page_num - 1);
+    }
+    return page_ignore_nav_btn;
+}
+
 function sp_update_page_ctrl(container, start_page) {
     let data = g_sp_data.get(container);
     data.page_nav_cur_page = start_page;
     let max_show_page = data.page_nav_items_count;
     let page_nav_items_container = data.page_nav_items_container;
+    if(page_nav_items_container == null) {
+        return;
+    }
     page_nav_items_container.innerHTML = '';
     let max_page_num = Math.ceil(data.childs.length / data.item_pre_page) - 1;
     if(max_page_num + 2 > max_show_page + start_page) {
@@ -168,26 +187,20 @@ function sp_update_page_ctrl(container, start_page) {
             page_nav_items_container.appendChild(page_btn);
         }
         if(max_show_page < max_page_num) {
-            let ignore_text = document.createElement('span');
-            ignore_text.className = 'page_nav_ignore_text';
-            ignore_text.innerHTML = '...';
-
+            let ignore_nav_btn = sp_create_ignore_nav_btn(container);
             let last_page_nav_btn = sp_create_nav_btn(container, max_page_num);
 
-            page_nav_items_container.appendChild(ignore_text);
+            page_nav_items_container.appendChild(ignore_nav_btn);
             page_nav_items_container.appendChild(last_page_nav_btn);
         }
     }
     else {
         if(max_show_page < max_page_num) {
-            let ignore_text = document.createElement('span');
-            ignore_text.className = 'page_nav_ignore_text';
-            ignore_text.innerHTML = '...';
-
+            let ignore_nav_btn = sp_create_ignore_nav_btn(container);
             let first_page_nav_btn = sp_create_nav_btn(container, 0);
 
             page_nav_items_container.appendChild(first_page_nav_btn);
-            page_nav_items_container.appendChild(ignore_text);
+            page_nav_items_container.appendChild(ignore_nav_btn);
             for(let i=max_page_num - max_show_page + 1; i<max_page_num + 1; ++i) {
                 let page_btn = sp_create_nav_btn(container, i);
                 if(i == start_page) {
@@ -239,12 +252,14 @@ function setup_page_ctrl(container, start_page = 0, max_show_page = 5) {
     page_nav.appendChild(page_nav_to_previous_page);
 
     let page_nav_items_container = document.createElement('div');
-    page_nav_items_container.className = 'page_nav';
+    page_nav_items_container.className = 'page_nav page_nav_items_container';
     data.page_nav_items_container = page_nav_items_container;
     page_nav.appendChild(page_nav_items_container);
 
     page_nav.appendChild(page_nav_to_next_page);
 
+    let page_nav_input_ctrl = document.createElement('div');
+    page_nav_input_ctrl.className = 'page_nav page_nav_items_container';
     let nav_text = document.createElement('span');
     nav_text.innerHTML = 'to';
     nav_text.className = 'page_nav';
@@ -256,7 +271,7 @@ function setup_page_ctrl(container, start_page = 0, max_show_page = 5) {
     let nav_btn = document.createElement('button');
     nav_btn.innerHTML = 'Go';
     nav_btn.className = 'page_nav page_nav_btn page_nav_ctrl_btn';
-    nav_btn.onclick = function() {
+    window.onclick = function() {
         let val = parseInt(nav_input.value);
         if(isNaN(val)) {
             return;
@@ -265,9 +280,21 @@ function setup_page_ctrl(container, start_page = 0, max_show_page = 5) {
         sp_load_content(container, val);
     }
 
-    page_nav.appendChild(nav_text);
-    page_nav.appendChild(nav_input);
-    page_nav.appendChild(nav_btn);
+    page_nav_input_ctrl.appendChild(nav_text);
+    page_nav_input_ctrl.appendChild(nav_input);
+    page_nav_input_ctrl.appendChild(nav_btn);
+    page_nav.appendChild(page_nav_input_ctrl);
+    let resize_callback = function () {
+        let devicewidth = document.documentElement.clientWidth;
+        if (devicewidth > data.hidden_nav_input_ctrl_width) {
+            page_nav_input_ctrl.style.display = 'flex';
+        }
+        else {
+            page_nav_input_ctrl.style.display = 'none';
+        }
+    }
+    window.addEventListener("resize", resize_callback);
+    resize_callback();
 
     data.page_ctrl_container.appendChild(page_nav);
 }
